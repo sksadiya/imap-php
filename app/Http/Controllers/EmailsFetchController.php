@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Webklex\IMAP\Facades\Client;
 use Carbon\Carbon;
+use HTMLPurifier;
+use HTMLPurifier_Config;
 class EmailsFetchController extends Controller
 {
     protected $client;
@@ -13,6 +15,7 @@ class EmailsFetchController extends Controller
     {
         $this->client = Client::account('default'); // Default account from the config
         $this->client->connect();
+       
     }
 
     public function showEmailTabs()
@@ -81,6 +84,7 @@ private function flattenFolder($folder, &$foldersArray)
 
     public function getFolderMessages($folderName)
     {
+        set_time_limit(300); // Set execution time to 5 minutes
         $folder = $this->client->getFolderByName($folderName);
 
         if (!$folder) {
@@ -90,15 +94,16 @@ private function flattenFolder($folder, &$foldersArray)
         $messages = $folder->query()->since($sinceDate)->get();
         // $messages = $folder->messages()->all()->sortBy('date', 'desc')->limit(10)->get();  // Limit to 10 mes
         $messagesData = [];
-
+        $config = HTMLPurifier_Config::createDefault();
+        $purifier = new HTMLPurifier($config);
         foreach ($messages as $message) {
             $subject = $message->getHeader()->get('subject')[0] ?? '(No Subject)';
             $messagesData[] = [
               'subject' => $subject,
             'from' => $message->getFrom()[0]->mail ?? 'Unknown',
             'date' => Carbon::parse($message->getDate()),  // Convert to Carbon instance,
-            'body' => $message->getTextBody(),
-            // 'body' => strip_tags($message->getHTMLBody() ?: $message->getTextBody())
+           'body' => $purifier->purify($message->getHtmlBody()),
+           'folder' => $folder->name,  
             ];
         }
 

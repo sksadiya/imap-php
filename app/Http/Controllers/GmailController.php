@@ -69,6 +69,7 @@ private function fetchFolderMessages($folder, &$mailbox, $sinceDate)
             'from' => $message->getFrom()[0]->mail ?? 'Unknown',
             'date' => Carbon::parse($message->getDate()),  // Convert to Carbon instance
             'body' => $message->getHTMLBody(),
+            'folder' => $folder->name,  
         ];
     }
 
