@@ -99,11 +99,13 @@ private function flattenFolder($folder, &$foldersArray)
         foreach ($messages as $message) {
             $subject = $message->getHeader()->get('subject')[0] ?? '(No Subject)';
             $messagesData[] = [
-              'subject' => $subject,
+            'subject' => $subject,
             'from' => $message->getFrom()[0]->mail ?? 'Unknown',
             'date' => Carbon::parse($message->getDate()),  // Convert to Carbon instance,
            'body' => $purifier->purify($message->getHtmlBody()),
            'folder' => $folder->name,  
+           'to' => env('IMAP_USERNAME'),
+           'id' =>$message->getUid(),
             ];
         }
 

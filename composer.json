@@ -8,6 +8,7 @@
         "php": "^8.2",
         "beyondcode/laravel-mailbox": "^4.0",
         "ezyang/htmlpurifier": "^4.17",
+        "fortawesome/font-awesome": "^6.5",
         "laravel/framework": "^11.9",
         "laravel/tinker": "^2.9",
         "webklex/laravel-imap": "^4.1",
