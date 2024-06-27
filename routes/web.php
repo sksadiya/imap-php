@@ -3,7 +3,9 @@
 use App\Http\Controllers\EmailsFetchController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\adminLoginController;
+use App\Http\Controllers\mailActions;
 use App\Http\Controllers\GmailController;
+use App\Http\Controllers\mail;
 Route::get('/', function () {
     if (Auth::check()) {
         if (Auth::user()->role(1)) {
@@ -17,7 +19,7 @@ Route::get('/', function () {
 Route::get('/emails', [EmailsFetchController::class, 'showEmailTabs']);
 Route::get('/folders', [EmailsFetchController::class, 'getFolders']);
 Route::get('/folders/{folderName}/messages', [EmailsFetchController::class, 'getFolderMessages']);
-
+Route::post('/email/action', [mailActions::class, 'handleEmailAction'])->name('mailAction');
 
 Route::get('/gmail', [GmailController::class, 'index'])->name('gmail');
 

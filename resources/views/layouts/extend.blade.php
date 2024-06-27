@@ -12,6 +12,7 @@
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.bunny.net">
     <link href="{{ asset('assets/fortawesome/font-awesome/css/all.min.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('assets/summernote/summernote-bs4.min.css') }}">
     <link rel="stylesheet" href="./public/css/style.css">
     <!-- Scripts -->
     
@@ -24,13 +25,21 @@
     </div>
     <script src="{{ asset('assets/jquery/dist/jquery.min.js') }}"></script>
     <script src="{{ asset('assets/bootstrap/dist/js/bootstrap.bundle.min.js') }}"></script>
+    
+    <script src="{{ asset('assets/summernote/summernote.min.js') }}"></script>
 <script>
 $.ajaxSetup({
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             }
         });
+        $(document).ready(function() {
+	$('.summernote').summernote({
+                    height: '300px'
+                });
+   });
         </script>
+        
     @yield('script')
 </body>
 </html>
