@@ -1,8 +1,14 @@
 @extends('layouts.extend')
-@section('title') Emails @endsection
 @section('content')
 
 <div class="container mt-5">
+    @if (Session::has('success'))
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+  <strong>Hurrah!</strong> {{ Session::get('success') }}
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+    @endif
+
     <nav class="nav nav-pills nav-fill" id="folderTabs">
         @foreach($folders as $index => $folder)
             <a class="nav-link {{ $index === 0 ? 'active' : '' }}"
@@ -14,7 +20,7 @@
             </a>
         @endforeach
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#composemodal">
-  Launch demo modal
+Compose
 </button>
         
     </nav>
@@ -105,30 +111,25 @@
 </div>
 
 
-<div class="modal fade" id="composemodal" tabindex="-1" role="dialog" aria-labelledby="composemodalTitle"
-        aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header p-3 bg-light">
-                    <h5 class="modal-title" id="composemodalTitle">New Message</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
+<div class="modal fade" id="composemodal" tabindex="-1" role="dialog" aria-labelledby="composemodalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header p-3 bg-light">
+                <h5 class="modal-title" id="composemodalTitle">New Message</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="composeForm" method="POST" action="{{ route('emails.send') }}">
+                @csrf
                 <div class="modal-body">
                     <div>
                         <div class="mb-3 position-relative">
-                            <input type="text" class="form-control email-compose-input" data-choices
-                                data-choices-limit="15" value="support@themesbrand.com" data-choices-removeItem
-                                placeholder="To">
+                            <input type="text" class="form-control email-compose-input" name="to" data-choices data-choices-limit="15" data-choices-removeItem placeholder="To">
                             <div class="position-absolute top-0 end-0">
                                 <div class="d-flex">
-                                    <button class="btn btn-link text-reset fw-semibold px-2" type="button"
-                                        data-bs-toggle="collapse" data-bs-target="#CcRecipientsCollapse"
-                                        aria-expanded="false" aria-controls="CcRecipientsCollapse">
+                                    <button class="btn btn-link text-reset fw-semibold px-2" type="button" data-bs-toggle="collapse" data-bs-target="#CcRecipientsCollapse" aria-expanded="false" aria-controls="CcRecipientsCollapse">
                                         Cc
                                     </button>
-                                    <button class="btn btn-link text-reset fw-semibold px-2" type="button"
-                                        data-bs-toggle="collapse" data-bs-target="#BccRecipientsCollapse"
-                                        aria-expanded="false" aria-controls="BccRecipientsCollapse">
+                                    <button class="btn btn-link text-reset fw-semibold px-2" type="button" data-bs-toggle="collapse" data-bs-target="#BccRecipientsCollapse" aria-expanded="false" aria-controls="BccRecipientsCollapse">
                                         Bcc
                                     </button>
                                 </div>
@@ -137,50 +138,48 @@
                         <div class="collapse" id="CcRecipientsCollapse">
                             <div class="mb-3">
                                 <label>Cc:</label>
-                                <input type="text" class="form-control" name="cc" id="cc" data-choices data-choices-limit="15"
-                                    data-choices-removeItem placeholder="Cc recipients">
+                                <input type="text" class="form-control" name="cc" data-choices data-choices-limit="15" data-choices-removeItem placeholder="Cc recipients">
                             </div>
                         </div>
                         <div class="collapse" id="BccRecipientsCollapse">
                             <div class="mb-3">
                                 <label>Bcc:</label>
-                                <input type="text" class="form-control" name="bcc" id="bcc"  data-choices data-choices-limit="15"
-                                    data-choices-removeItem placeholder="Bcc recipients">
+                                <input type="text" class="form-control" name="bcc" data-choices data-choices-limit="15" data-choices-removeItem placeholder="Bcc recipients">
                             </div>
                         </div>
-
                         <div class="mb-3">
-                            <input type="text" class="form-control" placeholder="Subject">
+                            <input type="text" class="form-control" name="subject" placeholder="Subject">
                         </div>
                         <div class="ck-editor-reverse">
-                           <textarea class="form-control summernote" name="message" id="message" Placeholder="Message"></textarea>
+                            <textarea class="form-control summernote" name="message" placeholder="Message"></textarea>
                         </div>
-
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-ghost-danger" data-bs-dismiss="modal">Discard</button>
-
                     <div class="btn-group">
-                        <button type="button" class="btn btn-success">Send</button>
-                        <button type="button" class="btn btn-success dropdown-toggle dropdown-toggle-split"
-                            data-bs-toggle="dropdown" aria-expanded="false">
+                        <button type="submit" class="btn btn-success">Send</button>
+                        <button type="button" class="btn btn-success dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
                             <span class="visually-hidden">Toggle Dropdown</span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="#"><i
-                                        class="ri-timer-line text-muted me-1 align-bottom"></i> Schedule Send</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="ri-timer-line text-muted me-1 align-bottom"></i> Schedule Send</a></li>
                         </ul>
                     </div>
                 </div>
-            </div>
+            </form>
         </div>
     </div>
+</div>
+
 @endsection
 
 @section('script')
 <script>
     $(document).ready(function () {
+        new Choices('.email-compose-input[data-choices]');
+            new Choices('#cc[data-choices]');
+            new Choices('#bcc[data-choices]');
     $('#folderTabs a').on('click', function (e) {
         e.preventDefault();
         $(this).tab('show');
