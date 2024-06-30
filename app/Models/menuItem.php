@@ -11,6 +11,6 @@ class menuItem extends Model
     protected $fillable = ['menu_id','page_id','parent_id','title','url','order'];
     public function children()
     {
-        return $this->hasMany(MenuItem::class, 'parent_id');
+        return $this->hasMany(MenuItem::class, 'parent_id')->orderBy('order');
     }
 }
