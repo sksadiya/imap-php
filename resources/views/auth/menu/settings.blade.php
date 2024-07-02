@@ -1,5 +1,23 @@
 @extends('layouts.extend')
 
+<!-- navbar.blade.php -->
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">Navbar</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav" id="menu-navbar">
+                <!-- Menu items will be dynamically added here -->
+            </ul>
+        </div>
+    </div>
+</nav>
+
+
+
 @section('content')
 <div class="container">
     <div class="row my-5">
@@ -17,6 +35,7 @@
                             <div class="mb-3">
                                 <label for="menu_id" class="form-label">Menu</label>
                                 <select class="form-control" name="menu_id" id="menu_id">
+                                    <option value="">select menu</option>
                                     @foreach ($menus as $menu)
                                     <option value="{{ $menu->id }}">{{ $menu->title }}</option>
                                     @endforeach
@@ -106,7 +125,7 @@
                 $('#nestable > .dd-list').append(`
                     <li class="dd-item" data-id="${pageId}" data-title="${pageTitle}">
                         <div class="dd-handle">${pageTitle}</div>
-                        <button class="btn btn-danger btn-sm remove-item"><i class="fa-regular fa-times"></i></button>
+                        <button class="btn btn-danger btn-sm remove-item"><i class="fa-regular fa-circle-xmark"></i></button>
                     </li>
                 `);
             });
@@ -173,7 +192,7 @@
             var listItem = $(`
                 <li class="dd-item" data-id="${item.id}" data-title="${item.title}">
                     <div class="dd-handle">${item.title}</div>
-                    <button class="btn btn-danger btn-sm remove-item"><i class="fa-regular fa-times"></i></button>
+                    <button class="btn btn-danger btn-sm remove-item"><i class="fa-regular fa-circle-xmark"></i></button>
                 </li>
             `);
 
@@ -241,6 +260,55 @@
             }
         });
     });
+</script>
+<script>
+    $(document).ready(function () {
+    // Existing code for managing menu items...
+
+    // Fetch and render navbar menu items
+    fetchMenuItems('header');
+
+    function fetchMenuItems(location) {
+        const fetchRoute = '{{ route("items", ":location") }}'.replace(':location', location);
+
+        $.ajax({
+            url: fetchRoute,
+            method: 'GET',
+            success: function (response) {
+                renderNavbarMenuItems(response, $('#menu-navbar'));
+            },
+            error: function (xhr, status, error) {
+                console.error('Failed to fetch menu items:', error);
+                console.error(xhr.responseText);
+            }
+        });
+    }
+
+    function renderNavbarMenuItems(items, parent) {
+        parent.empty();
+        items.forEach(item => {
+            const pageRouteTemplate = '{{ route('front.page', ':slug') }}';
+            const pageUrl = pageRouteTemplate.replace(':slug', item.slug);
+            const listItem = $('<li>').addClass('nav-item');
+
+            if (item.children && item.children.length > 0) {
+                listItem.addClass('dropdown');
+                listItem.html(`
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown-${item.id}" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        ${item.title}
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown-${item.id}"></ul>
+                `);
+                renderNavbarMenuItems(item.children, listItem.find('.dropdown-menu'));
+            } else {
+                listItem.html(`<a class="nav-link" href="${pageUrl}">${item.title}</a>`);
+            }
+
+            parent.append(listItem);
+        });
+    }
+});
+
 </script>
 @endsection
 

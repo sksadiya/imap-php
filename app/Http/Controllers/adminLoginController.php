@@ -117,4 +117,11 @@ public function delete($id) {
     Auth::guard('admin')->logout();
     return redirect()->route('admin.login');
   }
+  public function page($slug) {
+    $page = Page::where('slug', $slug)
+    ->where('status', 1)
+    ->first();
+    $pages = Page::where('status',1)->get();
+    return view('auth.menu.page' ,compact('page','pages'));
+}
 }

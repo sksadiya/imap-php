@@ -107,5 +107,43 @@ class MenuController extends Controller
         return response()->json(['success' => true]);
     }
     
- 
+    public function getMenuItemsByLocation($location)
+    {
+        // Fetch the menu by location
+        $menu = Menu::where('location', $location)->first();
+    
+        // Check if the menu exists
+        if (!$menu) {
+            return response()->json(['error' => 'Menu not found'], 404);
+        }
+    
+        // Fetch the menu items and include the page slugs
+        $menuItems = MenuItem::select('menu_items.*', 'pages.slug')
+                             ->join('pages', 'menu_items.page_id', '=', 'pages.id')
+                             ->where('menu_items.menu_id', $menu->id)
+                             ->orderBy('menu_items.order')
+                             ->get()
+                             ->toArray();
+    
+        // Build the nested structure
+        $nestedMenuItems = $this->buildTree($menuItems);
+    
+        return response()->json($nestedMenuItems);
+    }
+    
+    private function buildTree(array $elements, $parentId = 0)
+    {
+        $branch = [];
+        foreach ($elements as $element) {
+            if ($element['parent_id'] == $parentId) {
+                $children = $this->buildTree($elements, $element['id']);
+                if ($children) {
+                    $element['children'] = $children;
+                }
+                $branch[] = $element;
+            }
+        }
+        return $branch;
+    }
+    
 }

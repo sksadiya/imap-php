@@ -18,7 +18,7 @@ Route::get('/', function () {
     }
     return redirect()->route('admin.login');
 });
-
+Route::get('/page/{slug}', [adminLoginController::class, 'page'])->name('front.page');
 
 
 
@@ -44,6 +44,8 @@ Route::group(['prefix' => 'admin'], function () {
         Route::post('/menu/update/{id}', [MenuController::class,  'update'])->name('menu.update');
         Route::get('/menu/delete/{id}', [MenuController::class,  'delete'])->name('menu.delete');
         Route::get('/menu-settings', [MenuController::class,  'settings'])->name('menu.setting');
+
+        Route::get('/menu-item/{location}', [MenuController::class, 'getMenuItemsByLocation'])->name('items');
 
         Route::get('/emails', [EmailsFetchController::class, 'showEmailTabs']);
         Route::get('/folders', [EmailsFetchController::class, 'getFolders']);

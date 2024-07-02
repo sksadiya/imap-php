@@ -1,72 +1,108 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
-    <title>Nestable</title>
-    <link rel="stylesheet" href="{{ asset('assets/css/nestable.css') }}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nestable Menu</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
+    <style>
+        .nested-menu {
+            list-style: none;
+            padding: 0;
+        }
+        .nested-menu .nested-item {
+            margin: 5px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background-color: #f8f9fa;
+            cursor: move;
+        }
+        .nested-menu .nested-item > .nested-menu {
+            margin-left: 20px;
+        }
+    </style>
 </head>
 <body>
-    <div class="cf nestable-lists">
-        <div class="dd list-group" id="nestable">
-            <ol class="dd-list">
-                <li class="dd-item" data-id="1">
-                    <div class="dd-handle">Item 1</div>
-                </li>
-                <li class="dd-item" data-id="2">
-                    <div class="dd-handle">Item 2</div>
-                    <ol class="dd-list">
-                        <li class="dd-item" data-id="3"><div class="dd-handle">Item 3</div></li>
-                        <li class="dd-item" data-id="4"><div class="dd-handle">Item 4</div></li>
-                        <li class="dd-item" data-id="5">
-                            <div class="dd-handle">Item 5</div>
-                            <ol class="dd-list">
-                                <li class="dd-item" data-id="6"><div class="dd-handle">Item 6</div></li>
-                                <li class="dd-item" data-id="7"><div class="dd-handle">Item 7</div></li>
-                                <li class="dd-item" data-id="8"><div class="dd-handle">Item 8</div></li>
-                            </ol>
-                        </li>
-                        <li class="dd-item" data-id="9"><div class="dd-handle">Item 9</div></li>
-                        <li class="dd-item" data-id="10"><div class="dd-handle">Item 10</div></li>
-                    </ol>
-                </li>
-                <li class="dd-item" data-id="11">
-                    <div class="dd-handle">Item 11</div>
-                </li>
-                <li class="dd-item" data-id="12">
-                    <div class="dd-handle">Item 12</div>
-                </li>
-            </ol>
-        </div>
+    <div class="container">
+        <h2>Nested Menu</h2>
+        <ul class="nested-menu" id="nestedMenu">
+            <li class="nested-item" data-id="1">
+                Item 1
+                <ul class="nested-menu">
+                    <li class="nested-item" data-id="2">Subitem 1</li>
+                    <li class="nested-item" data-id="3">Subitem 2</li>
+                </ul>
+            </li>
+            <li class="nested-item" data-id="4">
+                Item 2
+                <ul class="nested-menu"></ul>
+            </li>
+            <li class="nested-item" data-id="5">
+                Item 3
+                <ul class="nested-menu"></ul>
+            </li>
+        </ul>
+        <button id="saveMenu" class="btn btn-primary mt-3">Save Menu</button>
     </div>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-    <script src="{{asset('assets/js/jquery.nestable.js')}}"></script>
+
     <script>
-        $(document).ready(function() {
-            var updateOutput = function(e) {
-                var list = e.length ? e : $(e.target),
-                    output = list.data('output');
-                if (window.JSON) {
-                    output.val(window.JSON.stringify(list.nestable('serialize')));
-                } else {
-                    output.val('JSON browser support required for this demo.');
+        document.addEventListener('DOMContentLoaded', function () {
+            const nestedMenu = document.getElementById('nestedMenu');
+
+            const sortableOptions = {
+                group: {
+                    name: 'nested',
+                    pull: true,
+                    put: true
+                },
+                animation: 150,
+                fallbackOnBody: true,
+                swapThreshold: 0.65,
+                handle: '.nested-item',
+                ghostClass: 'sortable-ghost',
+                onEnd: function (evt) {
+                    // Logic to handle saving the new order, if needed
+                    console.log('Drag ended');
                 }
             };
 
-            $('#nestable').nestable({ group: 1 }).on('change', updateOutput);
-            updateOutput($('#nestable').data('output', $('#nestable-output')));
+            // Initialize Sortable for the main list
+            const sortable = new Sortable(nestedMenu, sortableOptions);
 
-            $('#nestable-menu').on('click', function(e) {
-                var target = $(e.target),
-                    action = target.data('action');
-                if (action === 'expand-all') {
-                    $('.dd').nestable('expandAll');
-                }
-                if (action === 'collapse-all') {
-                    $('.dd').nestable('collapseAll');
-                }
+            // Function to recursively initialize Sortable for nested lists
+            function initializeNestedSortables(container) {
+                container.querySelectorAll('.nested-item').forEach(function (item) {
+                    const nestedList = item.querySelector(':scope > .nested-menu');
+                    if (nestedList) {
+                        const sortableNested = new Sortable(nestedList, sortableOptions);
+                        initializeNestedSortables(nestedList);
+                    }
+                });
+            }
+
+            // Initialize Sortable for all nested lists
+            initializeNestedSortables(nestedMenu);
+
+            document.getElementById('saveMenu').addEventListener('click', function () {
+                const menuItems = getNestedMenuItems(nestedMenu);
+                console.log(menuItems);
+
+                // Here, you can send menuItems to your server using AJAX, fetch, or any other method
             });
 
+            function getNestedMenuItems(container) {
+                const items = [];
+
+                container.querySelectorAll(':scope > .nested-item').forEach(item => {
+                    const id = item.getAttribute('data-id');
+                    const childrenContainer = item.querySelector(':scope > .nested-menu');
+                    const children = childrenContainer ? getNestedMenuItems(childrenContainer) : [];
+                    items.push({ id, children });
+                });
+
+                return items;
+            }
         });
     </script>
 </body>
